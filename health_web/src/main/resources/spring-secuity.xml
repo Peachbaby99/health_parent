@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+    <!--以下的所有配置中，涉及到url配置的，一律必须以/开始-->
+
+    <!--匿名访问，不需要登陆即可访问，静态资源
+        pattern: 访问的路径 以/开始
+        security: none 匿名访问，不需要登陆
+    -->
+    <security:http pattern="/css/**" security="none"/>
+    <security:http pattern="/img/**" security="none"/>
+    <security:http pattern="/js/**" security="none"/>
+    <security:http pattern="/plugins/**" security="none"/>
+    <security:http pattern="/login.html" security="none"/>
+
+    <!--配置拦截的规则
+        auto-config: 自动配置，生成login页面，完成认证的代码，匹配密码
+        use-expressions： 是否使用spel表达式, true代表使用
+    -->
+    <security:http auto-config="true" use-expressions="true">
+        <!--拦截规则
+            pattern: url的规则, /** 当前项目根路径下的任务url都要拦截
+            access: 要访问拦截的url，就必须有这个角色/权限
+                    当use-expressions=false, access的值只能是ROLE_打头,且为大写
+                    当use-expressions=true, 不能写ROLE_, hasAuthority hasRole....
+
+        <security:intercept-url pattern="/**" access="ROLE_ADMIN"/>-->
+        <security:intercept-url pattern="/**" access="isAuthenticated()"/>
+
+        <security:headers >
+            <!--页面中嵌套 frame标签时会触发 main.html主页中是用了iframe，会security捕获-->
+            <!--设置在页面可以通过iframe访问受保护的页面，默认为不允许访问
+			Spring-Security 默认是设置了 “X-Frame-Options” 属性为DENY
+			有三个：
+				DENY — 表示该页面不允许在 frame 中展示，即便是在相同域名的页面中嵌套也不允许。
+				SAMEORIGIN — 表示该页面可以在相同域名页面的 frame 中展示。
+				ALLOW-FROM https://example.com/ — 表示该页面可以在指定来源的 frame 中展示。
+			-->
+            <security:frame-options policy="SAMEORIGIN" />
+        </security:headers>
+
+        <!--登陆页面与处理的配置
+            username-parameter password-parameter: 指定将来使用什么参数名来获取用户名与密码 request.getParameter(abc)
+            login-processing-url: 指定处理登陆请求,此处可以指定自已写的登陆controller中的方法，一般不改
+            login-page: 登陆页面，登陆失败时跳转到这个页面
+            authentication-failure-url: 登陆失败时跳转到的页面，如果这个有指定，login-page就无效
+            default-target-url: 如果一开始用户访问的是login.html, 登陆成功后则跳转到index.html
+                                如果一开始用户访问的是a.html页面，没登陆则跳转到登陆页面login.html进行登陆，
+                                      登陆成功就跳转到a.html页面
+            always-use-default-target: true，不管原来是从哪个页面进入登陆的，都跳转到default-target-url指定的页面
+        -->
+        <security:form-login
+                username-parameter="username"
+                password-parameter="password"
+                login-processing-url="/login.do"
+                login-page="/login.html"
+                authentication-failure-url="/login.html"
+                default-target-url="/pages/main.html"
+                always-use-default-target="true"
+        />
+        <!-- 关闭跨域访问限制 不同域名都可以访问-->
+        <security:csrf disabled="true"/>
+        <!--退出登陆
+        logout-url: 处理退出的url
+        invalidate-session: 使用session失效
+        logout-success-url: 退出成功后跳转的页面
+        -->
+        <security:logout logout-url="/logout.do" invalidate-session="true" logout-success-url="/login.html"/>
+    </security:http>
+
+    <!--开启权限控制注解支持-->
+    <security:global-method-security pre-post-annotations="enabled"/>
+
+    <!--认证管理器-->
+    <security:authentication-manager>
+        <!--登陆用户信息的提供者-->
+        <security:authentication-provider user-service-ref="userService">
+            <!--正常应该从数据库查询，只要能进入spring容器，就可以使用
+
+            <security:user-service>
+                硬编码
+                    authorities 这个user所拥有的角色
+                    {noop}: no operation, 使用明文密码
+
+                <security:user name="admin" password="{noop}admin" authorities="ROLE_ADMIN"/>
+            </security:user-service>
+            -->
+            <!--使用的加密器，security会用这个加密器来匹配密码。encoder.matches方法-->
+            <security:password-encoder ref="encoder"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <context:component-scan base-package="com.xjt.secunity"/>
+
+    <bean id="encoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+</beans>

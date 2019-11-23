@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!--写类名-->
+<mapper namespace="com.xjt.dao.Conllordao">
+<!--   案例一 新增-->
+    <insert id="add" parameterType="CheckItem">
+        insert into t_checkitem(code,name,sex,age,price,type,remark,attention)
+                      values
+        (#{code},#{name},#{sex},#{age},#{price},#{type},#{remark},#{attention})
+    </insert>
+    <!--   案例二 查询分页-->
+    <select id="find" parameterType="String" resultType="CheckItem">
+        select * from t_checkitem
+        <where>
+            <if test="value != null and value.length > 0 ">
+--             value:前端传过来的条件
+                code like #{value} or name like #{value}
+            </if>
+        </where>
+    </select>
+<!--    案例三-删除-->
+    <delete id="delete" parameterType="Integer">
+        delete from t_checkitem where id = #{id}
+    </delete>
+<!--    根据id查询是否可以删除-->
+    <select id="findis" parameterType="int" resultType="long">
+        select count(1) from t_checkgroup_checkitem where checkitem_id =#{ids}
+    </select>
+<!--    回显数据-->
+    <select id="compile" parameterType="Integer" resultType="CheckItem">
+        select * from t_checkitem where id = #{id}
+    </select>
+<!--    编辑-->
+    <update id="update" parameterType="CheckItem">
+        update t_checkitem
+        <set>
+        <if test="name != null">
+            name = #{name},
+        </if>
+        <if test="sex != null">
+            sex = #{sex},
+        </if>
+        <if test="code != null">
+            code = #{code},
+        </if>
+        <if test="age != null">
+            age = #{age},
+        </if>
+        <if test="price != null">
+            price = #{price},
+        </if>
+        <if test="type != null">
+            type = #{type},
+        </if>
+        <if test="attention != null">
+            attention = #{attention},
+        </if>
+        <if test="remark != null">
+            remark = #{remark},
+        </if>
+    </set>
+    where id = #{id}
+    </update>
+</mapper>

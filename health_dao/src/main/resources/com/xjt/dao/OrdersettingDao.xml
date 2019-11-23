@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xjt.dao.OrdersettingDao">
+<!--    通过日期查询预约设置信息是否存在-->
+    <select id="findbyDate" parameterType="Date" resultType="OrderSetting">
+        select  * from t_ordersetting where  orderDate = #{orderDate}
+    </select>
+<!--    添加-->
+    <insert id="add" parameterType="OrderSetting">
+        insert  into t_ordersetting (orderDate,number,reservations)
+                      values
+      		(#{orderDate},#{number},#{reservations})
+    </insert>
+<!--    更新可预约数量-->
+    <update id="update" parameterType="OrderSetting">
+     update t_ordersetting set number = #{number} where orderDate = #{orderDate}
+    </update>
+
+<!--    回显全部预约信息-->
+    <select id="select" parameterType="String" resultType="OrderSetting">
+        select * from t_ordersetting where orderDate between #{a} and #{b}
+    </select>
+
+<!--    查看是否存在-->
+    <select id="cx" parameterType="Date" resultType="OrderSetting">
+        select  * from t_ordersetting where  orderDate = #{s}
+    </select>
+<!--    添加-->
+    <insert id="tj" parameterType="OrderSetting">
+        insert into t_ordersetting(orderDate,number) values (#{orderDate},#{number})
+    </insert>
+<!--    更改-->
+    <update id="up" parameterType="OrderSetting">
+        update t_ordersetting set number=#{number} where orderDate = #{orderDate}
+    </update>
+<!--    更新已预约数量-->
+    <update id="inReservations" parameterType="int">
+        update  t_ordersetting set reservations =reservations+#{num} where id = #{id}
+    </update>
+<!--    查询提交预约以后的详情-->
+    <select id="findById" parameterType="int" resultType="Member">
+
+      select m.name member ,s.name package,o.orderDate orderDate,o.orderType orderType
+      from
+      t_order o,
+      t_member m,
+      t_package s
+      where o.member_id=m.id and o.package_id=s.id and o.id=#{id}
+
+    </select>
+</mapper>

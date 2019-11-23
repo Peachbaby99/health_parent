@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xjt.dao.Conllorcheckdao">
+    <!--    查询新增检查项信息-->
+    <select id="newcheck" resultType="CheckItem">
+        select * from t_checkgroup
+    </select>
+    <!--    新增检查组-->
+    <insert id="handleAdd1" parameterType="CheckGroup">
+        <selectKey resultType="int" order="AFTER" keyProperty="id">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into t_checkgroup(code,name,sex,helpCode,remark,attention)
+        values
+        (#{code},#{name},#{sex},#{helpCode},#{remark},#{attention})
+    </insert>
+    <insert id="addcheckGroupAndintegers" parameterType="int">
+     insert into t_checkgroup_checkitem(checkgroup_id,checkitem_id)
+      		values
+      	(#{checkgroup_id},#{checkitem_id})
+    </insert>
+    <!--    检查组分页查询-->
+    <select id="fenyechaxun" resultType="CheckGroup" parameterType="String">
+        select  * from t_checkgroup
+        <where>
+            <if test="value != null and value.length>0">
+                code like #{value} or name like #{value} or helpCode like #{value}
+            </if>
+        </where>
+    </select>
+    <!--    通过id查询检查组-->
+    <select id="huixian1" parameterType="Integer" resultType="CheckGroup">
+        select * from  t_checkgroup where id =#{id}
+    </select>
+    <!--    回显检查项-->
+    <select id="sss" resultType="CheckItem">
+        select * from t_checkitem
+    </select>
+    <!--    通过检查组id查询对应选中的检查项-->
+    <select id="huixian3" resultType="Integer" parameterType="Integer">
+        select checkitem_id from t_checkgroup_checkitem where checkgroup_id =#{value}
+    </select>
+    <!--    更新编辑提交检查组-->
+    <update id="ddd" parameterType="CheckGroup">
+        update t_checkgroup
+        <set>
+            name = #{name},
+            sex = #{sex},
+            code = #{code},
+            helpCode = #{helpCode},
+            attention = #{attention},
+            remark = #{remark},
+        </set>
+        where  id =#{id}
+    </update>
+    <!--    删除组和项关系-->
+    <delete id="deleteddd" parameterType="Integer">
+        delete from t_checkgroup_checkitem where checkgroup_id=#{id]}
+    </delete>
+</mapper>

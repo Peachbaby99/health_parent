@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xjt.dao.Pachagdao">
+    <select id="select" resultType="CheckGroup">
+        select * from t_checkgroup
+    </select>
+<!--增加套餐信息-->
+    <insert id="add" parameterType="Package">
+        <selectKey resultType="Integer" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into t_package (code,name,sex,age,helpCode,price,remark,attention,img)
+        		values
+      		(#{code},#{name},#{sex},#{age},#{helpCode},#{price},#{remark},#{attention},#{img})
+    </insert>
+<!--    增加检查组和套餐的关系-->
+<insert id="addtaocanAndzu" parameterType="Integer">
+    INSERT INTO t_package_checkgroup
+      		(package_id,checkgroup_id)
+      			values
+      		(#{id},#{integer})
+</insert>
+<!--    查询套餐全部信息-->
+    <select id="findall" parameterType="string" resultType="Package">
+        select * from t_package
+        <where>
+            <if test="value != null and value.length >0">
+                code = #{value} or name = #{value} or helpCode = #{value}
+            </if>
+        </where>
+    </select>
+
+    <select id="getPackage" resultType="Package">
+        select * from t_package
+    </select>
+<!--    查询套餐信息-->
+    <select id="findById" parameterType="int" resultMap="packageDetail">
+       SELECT
+             tp.*,
+             tpc.checkgroup_id,
+             tc.name AS checkgroup_name,
+             tc.remark AS t_checkgroup_remark,
+             tcc.checkitem_id,
+             cc.name AS checkitem_name
+         FROM
+            t_package tp,t_checkgroup tc,t_checkitem cc,t_checkgroup_checkitem tcc,t_package_checkgroup tpc
+         WHERE
+            tp.id = tpc.package_id
+         AND
+            tpc.checkgroup_id = tc.id
+         AND
+            tc.id = tcc.checkgroup_id
+         AND
+            tcc.checkitem_id = cc.id
+         AND
+            tp.id =#{id}
+    </select>
+    <resultMap id="packageDetail" type="com.xjt.pojo.Package">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="code" column="code"/>
+        <result property="helpCode" column="helpCode"/>
+        <result property="sex" column="sex"/>
+        <result property="age" column="age"/>
+        <result property="price" column="price"/>
+        <result property="remark" column="remark"/>
+        <result property="attention" column="attention"/>
+        <result property="img" column="img"/>
+        <collection property="checkGroups" ofType="CheckGroup">
+            <id property="id" column="checkgroup_id"/>
+            <result property="name" column="checkgroup_name"/>
+            <result property="remark" column="t_checkgroup_remark"/>
+            <collection property="checkItems" ofType="CheckItem">
+                <id property="id" column="checkitem_id"/>
+                <result property="name" column="checkitem_name"/>
+            </collection>
+        </collection>
+    </resultMap>
+<!--    查询预约详情-->
+    <select id="findByIds" parameterType="int" resultType="Package">
+        select * from t_package where id = #{id}
+    </select>
+</mapper>
